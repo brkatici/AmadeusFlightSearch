@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "yIlu5uRC2SYbfKqjkoreUkqYlhvZr8L2BeY0fONRDDIr2b95J7s4glSjiQkZEMU/obD2XJbBDN9SZ5mGvvdTKQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Burak\\source\\repos\\AmadeusFlightSearchApp\\AmadeusFlightSearchApp\\AmadeusFlightSearchApp.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Burak\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

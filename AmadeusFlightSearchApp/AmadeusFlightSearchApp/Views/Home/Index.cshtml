@@ -1,0 +1,404 @@
+﻿
+<head>
+    <link rel="stylesheet" href="~/css/dataTables.bootstrap4.css">
+    <style>
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background color */
+            backdrop-filter: blur(10px); /* Apply blur effect */
+            z-index: 1000; /* Higher z-index to be above the loading icon */
+        }
+
+        #loadingIcon {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            font-size: 28px;
+        }
+
+        #loadingText {
+            position: fixed;
+            top: 55%;
+            left: 46.5%;
+            font-size: 28px;
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 15vw;
+            object-fit: cover;
+        }
+    </style>
+
+</head>
+
+<div id="loadingOverlay" hidden align="center">
+    <div class="overlay-content">
+        <div class="spinner-border mr-3 text-primary" role="status" id="loadingIcon">
+        </div>
+        <span id="loadingText">Lütfen Bekleyin..</span>
+    </div>
+</div>
+<div class="container-fluid">
+
+<div class="row justify-content-center">
+        <div class="col-12">
+            <div class="row align-items-center mb-2">
+                <div class="col" align="center">
+                    <h2 class="h5 page-title">Hoşgeldiniz!  Haydi sizin için en uygun uçuşu bulalım.</h2>
+                    <p>
+                        App Test Notes:
+                        <ul style="list-style:none">
+                            <li>LHR - AMS & IST-ADB shows result with any date(single way or roundtrip)</li>
+                            <li>Other selections will show sweet alert messages.</li>
+                            <li>SelectBox value errors handled (if matches or no value)</li>
+                        </ul>
+                    </p>
+                </div>
+             
+
+
+            </div>
+            <div class="mb-2 align-items-center">
+                <div class="card shadow mb-4 bg-transparent">
+                    <div class="card-header ml-3">
+                    </div>
+                    <div class="card-body" align="center">
+                        <form id="FlightSearchForm">
+                            <div class="row d-flex justify-content-center  align-items-center mb-2">
+                                <div class="custom-control custom-radio mr-3">
+                                    <input type="radio" id="customRadio1" name="customRadio" onclick="ElementsConditional(1)" class="custom-control-input">
+                                    <label class="custom-control-label" for="customRadio1">Sadece Gidiş</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="customRadio2" name="customRadio" onclick="ElementsConditional(0)" class="custom-control-input" checked>
+                                    <label class="custom-control-label" for="customRadio2">Gidiş Dönüş</label>
+                                </div>
+                            </div>
+                            <div class="row col-12 d-flex justify-content-center  align-items-center rounded-pill" style="background:rgba(0, 0, 0, 0.1)">
+                                <div class="form-group col-2 m-3">
+                                    <label for="simple-select1">Nereden</label>
+                                    <select class="form-control select2" id="simple-select1">
+                                        <option value="-1" selected>Seçiniz</option>
+                                        <option value="IST">IST Istanbul</option>
+                                        <option value="ADB">ADB Izmir</option>
+                                        <option value="LHR">LHR London</option>
+                                        <option value="AMS">AMS Amsterdam(Schipol)</option>
+
+                                    </select>
+                                </div> <!-- form-group -->
+                                <div class="form-group col-2 m-2">
+                                    <label for="simple-select2">Nereye</label>
+                                    <select class="form-control select2" id="simple-select2">
+                                        <option value="-1" selected>Seçiniz</option>
+                                        <option value="ADB">ADB Izmir</option>
+                                        <option value="IST">IST Istanbul</option>
+                                        <option value="LHR">LHR London</option>
+                                        <option value="AMS">AMS Amsterdam(Schipol)</option>
+                                    </select>
+                                </div> <!-- form-group -->
+
+                                <div class="form-group col-2 m-2">
+                                    <label for="date-input1">Gidiş Tarihi</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control drgpicker" id="date-input1" aria-describedby="button-addon2">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text" id="button-addon-date"><span class="fe fe-calendar fe-16"></span></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group col-2 m-2" id="donusInput">
+                                    <label for="date-input1">Dönüş Tarihi</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control drgpicker" id="date-input2" aria-describedby="button-addon2">
+                                        <div class="input-group-append">
+                                            <div class="input-group-text" id="button-addon-date"><span class="fe fe-calendar fe-16"></span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" id="sbmtbtn" class="btn btn-danger rounded-pill btn-lg ml-5 ">Uçuş Ara <i class="bi bi-airplane gly-rotate-45" style="font-size:25px;"></i></button>
+                        </form>
+                    </div>
+
+                </div> <!-- .card-body -->
+            </div> <!-- .card -->
+        </div>
+
+    </div> <!-- .col-12 -->
+</div> <!-- .row -->
+<div class="col-md-12" id="flightTableDiv" hidden>
+    <div class="card bg-transparent">
+        <div class="card-header" align="center" style="font-size:34px;"> Gidiş Uçuşları </div>
+        <div class="card-body">
+            <table class="table datatables" id="FlightTable">
+                <thead>
+                    <tr>
+
+
+
+                        <th>Uçuş Kodu</th>
+                        <th>Uçuş Tarihi</th>
+                        <th>Nereden</th>
+                        <th>Kalkış Saati</th>
+                        <th>İniş Saati</th>
+                        <th>Nereye</th>
+                        <th>Uçuş Süresi</th>
+                        <th>Bilet Fiyatı</th>
+                        <th></th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12 mt-3" id="flightTable2Div" hidden>
+    <div class="card bg-transparent">
+        <div class="card-header" align="center" style="font-size:34px;"> Dönüş Uçuşları </div>
+        <div class="card-body">
+            <table class="table datatables" id="FlightTable2">
+                <thead>
+                    <tr>
+                        <th>Uçuş Kodu</th>
+                        <th>Uçuş Tarihi</th>
+                        <th>Nereden</th>
+                        <th>Kalkış Saati</th>
+                        <th>İniş Saati</th>
+                        <th>Nereye</th>
+                        <th>Uçuş Süresi</th>
+                        <th>Bilet Fiyatı</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <!-- Card 1 -->
+    <div class="col-lg-4 mb-3 d-flex align-items-stretch">
+        <div class="card">
+            <img src="~/assets/images/Pictures/pexels-asad-photo-maldives-1024989.jpg" class="card-img-top" alt="...">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Maldivler Tatili</h5>
+                <p class="card-text">
+                    🌴 Rüya Gibi Bir Kaçış: Maldivler Tatili Sizi Bekliyor! 🌴
+
+                    Hayatın yoğun temposundan uzaklaşmak, berrak turkuaz suların kucakladığı beyaz kumsallarda huzur bulmak istemez misiniz? O zaman Maldivler'e hazır olun! Siz değerli yolcularımızı bu eşsiz cennet köşesine götürmekten büyük mutluluk duyuyoruz.
+                </p>
+                <a href="#" class="btn btn-primary mt-auto align-self-start">Book now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="col-lg-4 mb-3 d-flex align-items-stretch">
+        <div class="card">
+            <img src="~/assets/images/Pictures/pexels-oleksandr-p-2070485.jpg" class="card-img-top" alt="...">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Onlarca Farklı Lokasyon</h5>
+                <p class="card-text">Lüks resort otellerde unutulmaz bir konaklama deneyimi yaşayın. Overwater bungalovlarda günün stresini üzerinizden atarken, denizin huzur verici sesini dinleyerek rüya gibi bir tatil geçirin.</p>
+                <a href="#" class="btn btn-primary mt-auto align-self-start">Book now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="col-lg-4 mb-3 d-flex align-items-stretch">
+        <div class="card">
+            <img src="~/assets/images/Pictures/pic-1.jpg" class="card-img-top" alt="...">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Business Class Ayrıcalıkları ✈️</h5>
+                <p class="card-text">
+                    ✈️ Konforun Yeni Adı:
+
+                    Yolculuk sadece varış noktanıza ulaşmakla sınırlı değildir, aynı zamanda deneyimin kendisini de içerir. İşte bu noktada, Business Class ayrıcalıkları devreye giriyor. Size yalnızca bir yolculuk değil, unutulmaz bir deneyim sunuyoruz.
+                </p>
+                <a href="#" class="btn btn-primary mt-auto align-self-start">Book now</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/js/jquery.min.js"></script>
+<script src='~/js/jquery.dataTables.min.js'></script>
+<script src='~/js/dataTables.bootstrap4.min.js'></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    function showLoadingIcon() {
+        loadingOverlay.hidden = '';
+    }
+
+    function hideLoadingIcon() {
+        loadingOverlay.hidden = 'hidden';
+    }
+
+    const donusInput = document.getElementById('donusInput');
+    const flightTable2Div = document.getElementById('flightTable2Div');
+    const flightTableDiv = document.getElementById('flightTableDiv');
+
+    function ElementsConditional(situation) {
+
+        if (situation == 1) {
+
+            donusInput.hidden = 'hidden';
+        }
+        else {
+            donusInput.hidden = '';
+        }
+    }
+
+    // Initialize the DataTable
+    var dataTable = $('#FlightTable').DataTable({
+
+    });
+    var dataTable2 = $('#FlightTable2').DataTable({});
+
+
+    $("#FlightSearchForm").submit(function (event) {
+        event.preventDefault();
+        var startDate = $("#date-input1").val();
+        var endDate = $('#date-input2').val();
+        var fromWhere = $("#simple-select1").val();
+        var toWhere = $("#simple-select2").val();
+        if (fromWhere == -1 || toWhere == -1) {
+            swal({
+                title: "Kalkış - Varış Lokasyonu",
+                text: "Kalkış - Varış Lokasyonu seçimi hatalı veya eksik",
+                icon: "warning",
+                dangerMode: true,
+            })
+        } else if(fromWhere===toWhere){
+            swal({
+                title: "Kalkış - Varış Lokasyonu",
+                text: "Kalkış - Varış Lokasyonu seçiminden biri farklı olmalıdır",
+                icon: "warning",
+                dangerMode: true,
+            })
+        
+        }
+            else {
+            showLoadingIcon();
+            $.ajax({
+                url: "https://89e9573b-f11b-42bc-9ab2-b46afead0c87.mock.pstmn.io/Flights?Nereden=" + fromWhere + "&Nereye=" + toWhere, // Verileri çekeceğiniz URL
+                method: "GET",
+
+                success: function (data) {
+                    dataTable.clear().draw();
+                    dataTable2.clear().draw();
+
+                    var filteredData = data.filter(function (flight) {
+                        return flight.Nereden === fromWhere && flight.Nereye === toWhere;
+                    });
+                    if (filteredData.length == 0) {
+                        hideLoadingIcon();
+                        swal({
+                            title: "Hiçbir Uçuş Bulunamadı",
+                            text: "Aradığınız kriterlere uygun bir uçuş bulunamadı",
+                            icon: "warning",
+                            dangerMode: true,
+                        })
+                    }
+
+                    hideLoadingIcon();
+                    // Elde edilen verileri kullanabilirsiniz
+                    for (var i = 0; i < filteredData.length; i++) {
+                        if (document.getElementById('donusInput').hidden == true) {
+                            flightTable2Div.hidden = 'hidden';
+                            flightTableDiv.hidden = "";
+                            dataTable.row.add([
+                                filteredData[i].UcusKodu,
+                                filteredData[i].HavaYolu,
+                                filteredData[i].Nereden,
+                                filteredData[i].KalkisSaati,
+                                filteredData[i].InisSaati,
+                                filteredData[i].Nereye,
+                                filteredData[i].UcusSuresi,
+                                filteredData[i].BiletFiyati + " ₺",
+                                '<button class="btn btn-warning ml-2" style="width:120px;">Bilet Al</button>'
+
+
+
+                            ]).draw(false);
+                        }
+                        else {
+                            flightTable2Div.hidden = '';
+                            flightTableDiv.hidden = '';
+                            dataTable.row.add([
+                                filteredData[i].UcusKodu,
+                                filteredData[i].HavaYolu,
+                                filteredData[i].Nereden,
+                                filteredData[i].KalkisSaati,
+                                filteredData[i].InisSaati,
+                                filteredData[i].Nereye,
+                                filteredData[i].UcusSuresi,
+                                filteredData[i].BiletFiyati + " ₺",
+                                '<button class="btn btn-warning ml-2" style="width:120px;">Bilet Al</button>'
+
+                            ]).draw(false);
+
+                            dataTable2.row.add([
+                                generateRandomFlightNumber(),
+                                filteredData[i].HavaYolu,
+                                filteredData[i].Nereye,
+                                filteredData[i].KalkisSaati,
+                                filteredData[i].InisSaati,
+                                filteredData[i].Nereden,
+                                filteredData[i].UcusSuresi,
+                                filteredData[i].BiletFiyati + " ₺",
+                                '<button class="btn btn-warning ml-2" style="width:120px;">Bilet Al</button>'
+
+                            ]).draw(false);
+
+                        }
+
+
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.error("Hata:", textStatus, errorThrown);
+                }
+            });
+        }
+
+
+
+        // var endDate = $("#endDate").val();
+
+        // AJAX çağrısı yaparak JSON verileri çek
+        
+    });
+
+    function generateRandomFlightNumber() {
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let flightCode = '';
+
+        for (let i = 0; i < 2; i++) {
+            const randomLetterIndex = Math.floor(Math.random() * letters.length);
+            flightCode += letters[randomLetterIndex];
+        }
+
+        const randomDigits = Math.floor(Math.random() * 1000);
+        const paddedDigits = randomDigits.toString().padStart(3, '0');
+
+        flightCode += paddedDigits;
+
+        return flightCode;
+    }
+
+
+
+</script>
